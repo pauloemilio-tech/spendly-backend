@@ -1,178 +1,237 @@
 Spendly 💰 — Backend
 
-Spendly is a backend system for a personal finance management platform under development, designed with a focus on security, data integrity, and scalable architecture.
+Spendly is a backend system for a personal finance management platform under active development, designed with a focus on security, scalability, clean architecture and real-world financial workflows.
 
-Spendly is designed as a real-world, user-centric financial product, focusing on expense tracking, financial organization, and practical use cases.
+The project is being built as a realistic backend application, emphasizing authentication, ownership validation, domain organization and maintainable software engineering practices.
 
-🚧 Project Status: Active development
+🚧 Project Status: Active Development
 
 🎯 Overview
 
-This project aims to design and implement a backend system aligned with real-world application needs, focusing on:
+Spendly aims to simulate the backend architecture of a modern financial platform, focusing on:
 
-Secure authentication and data protection
-Consistent domain modeling and business rules
+Secure authentication and authorization
+User-based resource ownership
 Scalable and maintainable architecture
-Clear separation of concerns and clean code practices
+Clean separation of concerns
+Business validation and domain consistency
+Real-world API design practices
 🚀 Tech Stack
 Java 17+
-Spring Boot (Web, Data JPA, Security, Validation)
+Spring Boot
+Spring Web
+Spring Data JPA
 Spring Security
-JPA / Hibernate
+Bean Validation
+JWT Authentication
 PostgreSQL
+Hibernate / JPA
 Maven
 Lombok
-Bean Validation
-JWT (JSON Web Token)
 Docker
 Docker Compose
 🧱 Current Stage
 
-Backend fully functional with authentication flow implemented and environment containerized using Docker.
+The backend currently includes:
 
-The system is now reproducible and runs with isolated services (application + database), simulating a real-world backend environment.
+Full JWT authentication flow
+Protected routes with Spring Security
+Customer registration and login
+Wallet management module
+Ownership validation for authenticated users
+DTO-based request/response architecture
+Structured validation and exception handling
+Dockerized environment with PostgreSQL
+
+The project is evolving toward a complete personal finance platform with additional financial workflows and domain features planned for future iterations.
 
 🧠 Domain Direction
 
-The project is positioned as Spendly, a personal finance management system, to:
+Spendly is positioned as a modern personal finance management platform focused on practical and realistic use cases such as:
 
-Focus on a more realistic and widely applicable use case
-Improve product-market alignment
-Enable future features such as expense tracking, categorization, and financial insights
-Maintain the technical robustness while shifting to a more practical domain
+Expense tracking
+Financial organization
+Wallet management
+Transaction categorization
+Financial insights
+User-centered financial workflows
+
+The goal is to combine strong backend engineering practices with a domain that reflects real product scenarios.
+
 ✅ Progress
 Phase 1 — Domain Modeling (Completed)
 Entity	Description
-Customer	User of the platform with CPF, email and status
-Wallet	Financial wallet representation
-Transaction	Financial movements (expenses/income/transfers)
-PaymentKey	Payment keys (CPF, email, phone, random)
-LoginAudit	Login attempts tracking
-
-Applied concepts:
-
-JPA relationships (@OneToMany, @ManyToOne)
-Bean Validation (@NotNull, @Email, @Size)
-Strategic indexing (CPF, email)
-Enums with @Enumerated(EnumType.STRING)
-Domain encapsulation with business methods (block(), activate())
+Customer	Platform user with authentication data
+Wallet	Financial wallet owned by a customer
+Transaction	Financial movements and operations
+PaymentKey	Payment key representation
+LoginAudit	Login activity tracking
+Applied concepts
+JPA entity relationships
+Enum mapping with EnumType.STRING
+Domain encapsulation
+Bean Validation
+Strategic database indexing
+Business-oriented entity modeling
 Phase 2 — Backend Core (Completed)
-JPA repositories for domain entities
-Service layer with dependency injection
-DTO pattern (Request / Response separation)
-Password hashing with BCrypt
-Business validation (CPF uniqueness)
-Global exception handling (@RestControllerAdvice)
-Structured validation errors (field-level feedback)
+Implemented architecture
+Repository layer with Spring Data JPA
+Service layer with business rules
+DTO pattern for API contracts
+Dependency Injection
+Global exception handling
+Structured validation responses
+Password encryption with BCrypt
+CPF uniqueness validation
 🔐 Security & Authentication (Implemented)
 
-Stateless authentication using JWT:
+Spendly uses stateless JWT authentication with Spring Security.
 
-Spring Security configured with SecurityFilterChain
-Stateless session management (SessionCreationPolicy.STATELESS)
-Custom JWT authentication filter (JwtAuthenticationFilter)
-Custom authentication entry point (401 handler)
-Custom access denied handler (403 handler)
-Password encryption using BCryptPasswordEncoder
-🌐 Infrastructure (Dockerized)
-
-The backend environment is fully containerized:
-
-Dockerfile for application packaging
-Docker Compose orchestrating backend and PostgreSQL
-Environment variables externalized via .env
-Isolated network between services
-
-The application can be executed with a single command:
-
-docker compose up
-
-This ensures environment consistency and reproducibility across different machines.
-
-🧠 Authentication Flow
-
-Complete authentication flow implemented:
-
-POST /auth/login → validates credentials and returns JWT
-JWT includes subject (CPF) and user claims
-Frontend sends token via Authorization header
+Security features
+JWT-based authentication
+Stateless session management
+Custom JWT authentication filter
+Protected routes
+Custom 401 and 403 handlers
+Password encryption with BCrypt
+User authentication through SecurityContext
+Authentication Flow
+User logs in using CPF and password
+Backend validates credentials
+JWT token is generated
+Frontend stores token
+Protected requests send token via Authorization header
 JWT filter validates token on every request
-Spring Security authenticates user via SecurityContext
+💼 Wallet Management Module (Implemented)
+
+The wallet module was designed around authenticated ownership and financial organization.
+
+Features
+Create wallet
+List authenticated user wallets
+Retrieve wallet by ID
+Update wallet data
+Deactivate wallet
+Ownership validation for protected resources
+Backend concepts applied
+DTO separation
+Custom exceptions
+Ownership checks
+Centralized exception handling
+Validation with Bean Validation
+Enum-based categorization
+Service-layer business rules
 🌐 API Overview
-Create Customer
+Authentication
+Register Customer
 
 POST /customers
 
-Request Body:
-
+Request Body
 {
   "name": "Paulo Emilio",
   "cpf": "12345678901",
   "password": "123456",
   "email": "paulo@email.com"
 }
-
-Features:
-
+Features
 CPF uniqueness validation
-Secure password hashing (BCrypt)
-DTO-based response
-Structured validation error handling
+BCrypt password hashing
+Structured validation handling
+DTO-based responses
 Login
 
 POST /auth/login
 
-Request Body:
-
+Request Body
 {
   "cpf": "12345678901",
   "password": "123456"
 }
-
-Response:
-
+Response
 {
   "token": "eyJhbGciOiJIUzI1NiJ9...",
   "type": "Bearer"
 }
-Get Current User
+Current Authenticated User
 
 GET /customers/me
 
-Headers:
-
+Headers
 Authorization: Bearer <JWT_TOKEN>
-
-Response:
-
+Response
 {
   "id": 1,
   "name": "Paulo Emilio",
   "email": "paulo@email.com"
 }
+💳 Wallet Endpoints
+Create Wallet
+
+POST /wallets
+
+Request Body
+{
+  "name": "Main Wallet",
+  "walletType": "BANK_ACCOUNT"
+}
+List Wallets
+
+GET /wallets
+
+Get Wallet By ID
+
+GET /wallets/{id}
+
+Update Wallet
+
+PUT /wallets/{id}
+
+Request Body
+{
+  "name": "Updated Wallet",
+  "walletType": "CREDIT_CARD"
+}
+Deactivate Wallet
+
+DELETE /wallets/{id}
+
+🌐 Infrastructure (Dockerized)
+
+The backend environment is fully containerized.
+
+Infrastructure setup
+Dockerfile for application packaging
+Docker Compose orchestration
+PostgreSQL container
+Isolated container networking
+Externalized environment variables
+Run with Docker
+docker compose up
+
+This guarantees reproducible environments and simplifies local setup.
+
 🧪 Running the Application
 Using Docker (Recommended)
-# Clone the repository
-git clone https://github.com/paulojrtoledo/spendly-backend.git
-
-# Navigate to the project folder
+Clone repository
+git clone https://github.com/pauloemilio-tech/spendly-backend.git
+Navigate to project
 cd spendly-backend
-
-# Create .env file with:
-# JWT_SECRET
-# DB_SPENDLY_URL
-# DB_SPENDLY_USERNAME
-# DB_SPENDLY_PASSWORD
-
-# Run the application
+Create .env file
+JWT_SECRET=your_secret
+DB_SPENDLY_URL=jdbc:postgresql://postgres:5432/spendly
+DB_SPENDLY_USERNAME=postgres
+DB_SPENDLY_PASSWORD=postgres
+Run application
 docker compose up
-Running Locally (without Docker)
+Running Locally (Without Docker)
 ./mvnw spring-boot:run
 🔗 Related Repository
 
-Frontend:
-https://github.com/paulojrtoledo/spendly-frontend
+Frontend Repository:
+
+https://github.com/pauloemilio-tech/spendly-frontend
 
 👤 Author
 
-Paulo Emilio de Toledo Jr
+Paulo Emilio de Toledo Jr.
