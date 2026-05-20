@@ -2,39 +2,46 @@ package com.spendly.domain.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
+@Getter
 @NoArgsConstructor
-@Table(name = "transaction",
-    indexes = {
-        @Index(name = "idx_transaction_source_wallet", columnList = "source_wallet_id"),
-        @Index(name = "idx_transaction_destination_wallet", columnList = "destination_wallet_id")
-    })
+@Table(name = "transaction")
 public class Transaction {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @NotNull @Positive @Getter private double amount;
-    @NotNull @Getter @Enumerated(EnumType.STRING) private TransactionType transactionType;
-    @NotNull @Getter private LocalDateTime timestamp;
-    @NotNull @Getter @ManyToOne
-    @JoinColumn(name = "source_wallet_id")
-    private Wallet sourceWallet;
-    @NotNull @Getter @ManyToOne
-    @JoinColumn(name = "destination_wallet_id")
-    private Wallet destinationWallet;
-    @Getter @Enumerated(EnumType.STRING) private TransactionStatus transactionStatus = TransactionStatus.PENDING;
 
-    public Transaction(double amount, Wallet sourceWallet, Wallet destinationWallet, TransactionType transactionType) {
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "wallet_id", nullable = false)
+    private Wallet wallet;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TransactionType type;
+
+    @NotNull
+    @Column(nullable = false, precision = 15, scale = 2)
+    private BigDecimal amount;
+
+    private String description;
+
+    @NotNull
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    public Transaction(Wallet wallet, TransactionType type, BigDecimal amount, String description) {
+        this.wallet = wallet;
+        this.type = type;
         this.amount = amount;
-        this.sourceWallet = sourceWallet;
-        this.destinationWallet = destinationWallet;
-        this.transactionType = transactionType;
-        this.timestamp = LocalDateTime.now();
+        this.description = description;
+        this.createdAt = LocalDateTime.now();
     }
 }

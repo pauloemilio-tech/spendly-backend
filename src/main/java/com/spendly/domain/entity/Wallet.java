@@ -66,4 +66,14 @@ public class Wallet {
     public void activate() {
         this.status = WalletStatus.ACTIVE;
     }
+
+    public void increaseBalance(java.math.BigDecimal amount) {
+        if (amount == null) return;
+        this.balance = this.balance.add(amount);
+    }
+
+    public void decreaseBalance(java.math.BigDecimal amount) {
+        if (amount == null) return;
+        this.balance = this.balance.subtract(amount);
+    }
 }

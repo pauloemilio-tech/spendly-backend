@@ -1,13 +1,17 @@
 package com.spendly.domain.entity;
 
 public enum TransactionType {
-    INCOME("Entrada financeira"),
-    EXPENSE("Saída financeira"),
-    TRANSFER("Transferência entre carteiras");
+    INCOME("Receita"),
+    EXPENSE("Despesa");
 
-    private String description;
+    private final String description;
 
     TransactionType(String description) {
         this.description = description;
     }
+
+    public String getDescription() {
+        return description;
+    }
 }
+

@@ -5,6 +5,8 @@ import com.spendly.domain.exception.CpfAlreadyExistsException;
 import com.spendly.domain.exception.InvalidCredentialsException;
 import com.spendly.domain.exception.WalletAccessDeniedException;
 import com.spendly.domain.exception.WalletNotFoundException;
+import com.spendly.domain.exception.TransactionNotFoundException;
+import com.spendly.domain.exception.InsufficientFundsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -67,6 +69,26 @@ public class GlobalExceptionHandler {
 
         return new ErrorResponse(
                 message,
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now()
+        );
+    }
+
+    @ExceptionHandler(TransactionNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleTransactionNotFound(TransactionNotFoundException ex) {
+        return new ErrorResponse(
+                ex.getMessage(),
+                HttpStatus.NOT_FOUND.value(),
+                LocalDateTime.now()
+        );
+    }
+
+    @ExceptionHandler(InsufficientFundsException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleInsufficientFunds(InsufficientFundsException ex) {
+        return new ErrorResponse(
+                ex.getMessage(),
                 HttpStatus.BAD_REQUEST.value(),
                 LocalDateTime.now()
         );
