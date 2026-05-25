@@ -1,11 +1,11 @@
 package com.spendly.domain.entity;
 
 public enum WalletType {
-    CHECKING("Conta Corrente"),
-    SAVINGS("Poupança"),
-    INVESTMENT("Investimentos"),
+    BANK_ACCOUNT("Conta Bancária"),
     CASH("Dinheiro em Espécie"),
-    DIGITAL("Carteira Digital");
+    CREDIT_CARD("Cartão de Crédito"),
+    INVESTMENT("Investimentos"),
+    DIGITAL_WALLET("Carteira Digital");
 
     private final String description;
 

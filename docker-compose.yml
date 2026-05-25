@@ -3,9 +3,9 @@ services:
     image: postgres:16
     container_name: spendly-postgres
     environment:
-      POSTGRES_DB: spendly
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${DB_SPENDLY_DATABASE}
+      POSTGRES_USER: ${DB_SPENDLY_USERNAME}
+      POSTGRES_PASSWORD: ${DB_SPENDLY_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -18,9 +18,9 @@ services:
       - postgres
     environment:
       JWT_SECRET: ${JWT_SECRET}
-      DB_SPENDLY_URL: jdbc:postgresql://postgres:5432/spendly
-      DB_SPENDLY_USERNAME: postgres
-      DB_SPENDLY_PASSWORD: postgres
+      DB_SPENDLY_URL: jdbc:postgresql://postgres:5432/${DB_SPENDLY_DATABASE}
+      DB_SPENDLY_USERNAME: ${DB_SPENDLY_USERNAME}
+      DB_SPENDLY_PASSWORD: ${DB_SPENDLY_PASSWORD}
     ports:
       - "8080:8080"
 

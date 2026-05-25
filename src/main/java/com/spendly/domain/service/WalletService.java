@@ -5,6 +5,7 @@ import com.spendly.api.dto.request.WalletUpdateRequestDTO;
 import com.spendly.api.dto.response.WalletResponseDTO;
 import com.spendly.domain.entity.Customer;
 import com.spendly.domain.entity.Wallet;
+import com.spendly.domain.entity.WalletStatus;
 import com.spendly.domain.exception.WalletNotFoundException;
 import com.spendly.domain.repository.CustomerRepository;
 import com.spendly.domain.repository.WalletRepository;
@@ -27,13 +28,13 @@ public class WalletService {
     @Transactional
     public WalletResponseDTO createWallet(String cpf, WalletRequestDTO dto) {
         Customer customer = resolveCustomer(cpf);
-        Wallet wallet = new Wallet(dto.name(), dto.walletType(), customer);
+        Wallet wallet = new Wallet(dto.name(), dto.walletType(), dto.initialBalance(), customer);
         return WalletResponseDTO.from(walletRepository.save(wallet));
     }
 
     public List<WalletResponseDTO> listWallets(String cpf) {
         Customer customer = resolveCustomer(cpf);
-        return walletRepository.findAllByCustomerId(customer.getId())
+        return walletRepository.findAllByCustomerIdAndStatus(customer.getId(), WalletStatus.ACTIVE)
                 .stream()
                 .map(WalletResponseDTO::from)
                 .toList();
@@ -41,14 +42,14 @@ public class WalletService {
 
     public WalletResponseDTO getWallet(String cpf, Long walletId) {
         Customer customer = resolveCustomer(cpf);
-        Wallet wallet = findOwnedWallet(walletId, customer.getId());
+        Wallet wallet = findActiveOwnedWallet(walletId, customer.getId());
         return WalletResponseDTO.from(wallet);
     }
 
     @Transactional
     public WalletResponseDTO updateWallet(String cpf, Long walletId, WalletUpdateRequestDTO dto) {
         Customer customer = resolveCustomer(cpf);
-        Wallet wallet = findOwnedWallet(walletId, customer.getId());
+        Wallet wallet = findActiveOwnedWallet(walletId, customer.getId());
 
         if (dto.name() != null) {
             wallet.setName(dto.name());
@@ -77,6 +78,11 @@ public class WalletService {
 
     private Wallet findOwnedWallet(Long walletId, Long customerId) {
         return walletRepository.findByIdAndCustomerId(walletId, customerId)
+                .orElseThrow(() -> new WalletNotFoundException(walletId));
+    }
+
+    private Wallet findActiveOwnedWallet(Long walletId, Long customerId) {
+        return walletRepository.findByIdAndCustomerIdAndStatus(walletId, customerId, WalletStatus.ACTIVE)
                 .orElseThrow(() -> new WalletNotFoundException(walletId));
     }
 }

@@ -7,6 +7,7 @@ import com.spendly.domain.exception.WalletAccessDeniedException;
 import com.spendly.domain.exception.WalletNotFoundException;
 import com.spendly.domain.exception.TransactionNotFoundException;
 import com.spendly.domain.exception.InsufficientFundsException;
+import com.spendly.domain.exception.TransactionCategoryMismatchException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -87,6 +88,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InsufficientFundsException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleInsufficientFunds(InsufficientFundsException ex) {
+        return new ErrorResponse(
+                ex.getMessage(),
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now()
+        );
+    }
+
+    @ExceptionHandler(TransactionCategoryMismatchException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleCategoryMismatch(TransactionCategoryMismatchException ex) {
         return new ErrorResponse(
                 ex.getMessage(),
                 HttpStatus.BAD_REQUEST.value(),

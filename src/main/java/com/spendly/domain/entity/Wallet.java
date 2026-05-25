@@ -50,11 +50,11 @@ public class Wallet {
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
-    public Wallet(String name, WalletType walletType, Customer customer) {
+    public Wallet(String name, WalletType walletType, java.math.BigDecimal initialBalance, Customer customer) {
         this.name = name;
         this.walletType = walletType;
         this.customer = customer;
-        this.balance = BigDecimal.ZERO;
+        this.balance = initialBalance != null ? initialBalance : BigDecimal.ZERO;
         this.status = WalletStatus.ACTIVE;
         this.openingDate = LocalDate.now();
     }

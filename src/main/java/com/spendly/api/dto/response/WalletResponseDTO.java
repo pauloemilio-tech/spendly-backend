@@ -9,7 +9,8 @@ public record WalletResponseDTO(
         Long id,
         String name,
         BigDecimal balance,
-        String walletType,
+    String walletType,
+    String walletTypeDescription,
         String status,
         LocalDate openingDate
 ) {
@@ -18,7 +19,8 @@ public record WalletResponseDTO(
                 wallet.getId(),
                 wallet.getName(),
                 wallet.getBalance(),
-                wallet.getWalletType().getDescription(),
+        wallet.getWalletType().name(),
+        wallet.getWalletType().getDescription(),
                 wallet.getStatus().name(),
                 wallet.getOpeningDate()
         );

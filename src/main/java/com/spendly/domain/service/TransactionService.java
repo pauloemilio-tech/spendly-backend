@@ -5,9 +5,13 @@ import com.spendly.api.dto.response.TransactionResponseDTO;
 import com.spendly.domain.entity.Customer;
 import com.spendly.domain.entity.Transaction;
 import com.spendly.domain.entity.TransactionType;
+import com.spendly.domain.entity.TransactionCategory;
 import com.spendly.domain.entity.Wallet;
+import com.spendly.domain.entity.WalletStatus;
 import com.spendly.domain.exception.InsufficientFundsException;
+import com.spendly.domain.exception.TransactionCategoryMismatchException;
 import com.spendly.domain.exception.TransactionNotFoundException;
+import com.spendly.domain.exception.WalletNotFoundException;
 import com.spendly.domain.repository.CustomerRepository;
 import com.spendly.domain.repository.TransactionRepository;
 import com.spendly.domain.repository.WalletRepository;
@@ -34,8 +38,13 @@ public class TransactionService {
     @Transactional
     public TransactionResponseDTO createTransaction(String cpf, TransactionRequestDTO dto) {
         Customer customer = resolveCustomer(cpf);
-        Wallet wallet = walletRepository.findByIdAndCustomerId(dto.walletId(), customer.getId())
-            .orElseThrow(() -> new com.spendly.domain.exception.WalletNotFoundException(dto.walletId()));
+        Wallet wallet = walletRepository.findByIdAndCustomerIdAndStatus(dto.walletId(), customer.getId(), WalletStatus.ACTIVE)
+            .orElseThrow(() -> new WalletNotFoundException(dto.walletId()));
+
+        // category/type compatibility validation
+        if (!dto.category().isCompatibleWith(dto.type())) {
+            throw new TransactionCategoryMismatchException(dto.type(), dto.category());
+        }
 
         // business validations
         if (dto.amount().compareTo(java.math.BigDecimal.ZERO) <= 0) {
