@@ -352,7 +352,7 @@ Running Locally (Without Docker)
 
 Frontend Repository:
 
-https://github.com/paulojrtoledo/spendly-frontend
+[Spendly Frontend](https://github.com/paulojrtoledo/spendly-frontend)
 
 👤 Author
 
