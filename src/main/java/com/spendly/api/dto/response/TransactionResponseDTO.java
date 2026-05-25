@@ -9,6 +9,7 @@ public record TransactionResponseDTO(
         Long id,
         Long walletId,
         String type,
+    String category,
         BigDecimal amount,
         String description,
         LocalDateTime createdAt
@@ -18,6 +19,7 @@ public record TransactionResponseDTO(
                 t.getId(),
                 t.getWallet().getId(),
                 t.getType().name(),
+        t.getCategory() != null ? t.getCategory().name() : null,
                 t.getAmount(),
                 t.getDescription(),
                 t.getCreatedAt()

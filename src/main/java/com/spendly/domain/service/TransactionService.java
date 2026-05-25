@@ -54,7 +54,7 @@ public class TransactionService {
         // persist changes
         walletRepository.save(wallet);
 
-        Transaction tx = new Transaction(wallet, dto.type(), dto.amount(), dto.description());
+        Transaction tx = new Transaction(wallet, dto.type(), dto.category(), dto.amount(), dto.description());
         Transaction saved = transactionRepository.save(tx);
 
         return TransactionResponseDTO.from(saved);
