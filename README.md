@@ -261,50 +261,124 @@ Spendly uses stateless JWT authentication with Spring Security.
 
 ```http
 POST /customers
-Request Body
+```
+
+### Request Body
+
+```json
 {
   "name": "Paulo Emilio",
   "cpf": "12345678901",
   "password": "123456",
   "email": "paulo@email.com"
 }
-Login
+```
+
+---
+
+## Login
+
+```http
 POST /auth/login
-Request Body
+```
+
+### Request Body
+
+```json
 {
   "cpf": "12345678901",
   "password": "123456"
 }
-Response
+```
+
+### Response
+
+```json
 {
   "token": "eyJhbGciOiJIUzI1NiJ9...",
   "type": "Bearer"
 }
-Current Authenticated User
+```
+
+---
+
+## Current Authenticated User
+
+```http
 GET /customers/me
-Headers
+```
+
+### Headers
+
+```http
 Authorization: Bearer <JWT_TOKEN>
-💼 Wallet Endpoints
-Create Wallet
+```
+
+---
+
+# 💼 Wallet Endpoints
+
+## Create Wallet
+
+```http
 POST /wallets
-Request Body
+```
+
+### Request Body
+
+```json
 {
   "name": "Santander",
   "walletType": "BANK_ACCOUNT",
   "initialBalance": 500
 }
-List Wallets
+```
+
+---
+
+## List Wallets
+
+```http
 GET /wallets
-Get Wallet By ID
+```
+
+---
+
+## Get Wallet By ID
+
+```http
 GET /wallets/{id}
-Update Wallet
+```
+
+---
+
+## Update Wallet
+
+```http
 PATCH /wallets/{id}
-Deactivate Wallet
+```
+
+---
+
+## Deactivate Wallet
+
+```http
 DELETE /wallets/{id}
-💸 Transaction Endpoints
-Create Transaction
+```
+
+---
+
+# 💸 Transaction Endpoints
+
+## Create Transaction
+
+```http
 POST /transactions
-Request Body
+```
+
+### Request Body
+
+```json
 {
   "walletId": 1,
   "type": "EXPENSE",
@@ -312,48 +386,98 @@ Request Body
   "amount": 100,
   "description": "Market"
 }
-List Transactions
+```
+
+---
+
+## List Transactions
+
+```http
 GET /transactions
-Get Transaction By ID
+```
+
+---
+
+## Get Transaction By ID
+
+```http
 GET /transactions/{id}
-🌐 Infrastructure (Dockerized)
+```
+
+---
+
+# 🌐 Infrastructure (Dockerized)
 
 The backend environment is fully containerized.
 
-Infrastructure setup
-Dockerfile for backend packaging
-Docker Compose orchestration
-PostgreSQL container
-Isolated container networking
-Externalized environment variables
-Persistent PostgreSQL volume
-Run with Docker
+## Infrastructure setup
+
+- Dockerfile for backend packaging
+- Docker Compose orchestration
+- PostgreSQL container
+- Isolated container networking
+- Externalized environment variables
+- Persistent PostgreSQL volume
+
+## Run with Docker
+
+```bash
 docker compose up -d --build
+```
 
 This guarantees reproducible environments and simplifies local setup.
 
-🧪 Running the Application
-Using Docker (Recommended)
-Clone repository
+---
+
+# 🧪 Running the Application
+
+# Using Docker (Recommended)
+
+## Clone repository
+
+```bash
 git clone https://github.com/paulojrtoledo/spendly-backend.git
-Navigate to project
+```
+
+## Navigate to project
+
+```bash
 cd spendly-backend
-Create .env
+```
+
+## Create `.env`
+
+```env
 JWT_SECRET=your_secret
 
 DB_SPENDLY_DATABASE=spendly
 DB_SPENDLY_USERNAME=postgres
 DB_SPENDLY_PASSWORD=postgres
-Run application
+```
+
+## Run application
+
+```bash
 docker compose up -d --build
-Running Locally (Without Docker)
+```
+
+---
+
+# Running Locally (Without Docker)
+
+```bash
 ./mvnw spring-boot:run
-🔗 Related Repository
+```
 
-Frontend Repository:
+---
 
-[Spendly Frontend](https://github.com/paulojrtoledo/spendly-frontend)
+# 🔗 Related Repositories
 
-👤 Author
+- [Spendly Frontend](https://github.com/paulojrtoledo/spendly-frontend)
+- [Spendly Backend](https://github.com/paulojrtoledo/spendly-backend)
+
+---
+
+# 👤 Author
 
 Paulo Emilio de Toledo Jr.
