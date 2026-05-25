@@ -474,7 +474,6 @@ docker compose up -d --build
 # 🔗 Related Repositories
 
 - [Spendly Frontend](https://github.com/paulojrtoledo/spendly-frontend)
-- [Spendly Backend](https://github.com/paulojrtoledo/spendly-backend)
 
 ---
 
