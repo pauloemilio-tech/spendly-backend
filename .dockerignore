@@ -1,0 +1,14 @@
+.git
+.github
+.idea
+.vscode
+target
+
+.env
+*.env
+**/.env
+**/*.env
+!.env.example
+
+application-local.properties
+application-dev.properties

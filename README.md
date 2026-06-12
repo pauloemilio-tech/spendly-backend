@@ -572,14 +572,29 @@ git clone https://github.com/paulojrtoledo/spendly-backend.git
 cd spendly-backend
 ```
 
+## Environment variables
+
+Use [`.env.example`](.env.example) as the deployment reference. Configure
+those variables in the environment settings of Render, Railway, Koyeb, or
+another deployment provider. Do not commit the real `.env` file or production
+credentials.
+
+For a public frontend, replace `APP_CORS_ALLOWED_ORIGINS` with its deployed
+URL. Multiple origins must be separated by commas.
+
 ## Create `.env`
 
+For local Docker Compose, `DB_SPENDLY_DATABASE` is also required because the
+JDBC URL is assembled by the Compose configuration.
+
 ```env
-JWT_SECRET=your_secret
+JWT_SECRET=replace_with_a_strong_secret_at_least_32_bytes
 
 DB_SPENDLY_DATABASE=spendly
 DB_SPENDLY_USERNAME=postgres
-DB_SPENDLY_PASSWORD=postgres
+DB_SPENDLY_PASSWORD=replace_with_database_password
+APP_CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:5174
+SPRING_JPA_SHOW_SQL=false
 ```
 
 ## Run application
