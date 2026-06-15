@@ -2,10 +2,48 @@
 
 Spendly is a backend system for a modern personal finance management platform built with a strong focus on security, financial consistency, scalable architecture and real-world backend engineering practices.
 
-The project simulates the backend foundation of a real financial product, including authentication, wallet management, transaction flows, ownership validation, transactional business rules and authenticated financial dashboard data.
+The project simulates the backend foundation of a real financial product, including authentication, wallet management, transaction flows, ownership validation, transactional business rules, authenticated financial dashboard data and integration with a deployed frontend application.
 
-> 🚧 **Project Status:** Active Development
-> This project is still evolving and is not production-ready yet.
+> 🚧 **Project Status:** Active Development / Live Demo Available
+> This project is still evolving, but it already has a functional deployed demo environment connected to a cloud-hosted backend and database.
+
+---
+
+# 🌐 Live Deployment
+
+The Spendly backend is currently deployed on an Oracle Cloud Infrastructure VM and connected to a Neon PostgreSQL database.
+
+The public demo is accessed through the frontend application deployed on Vercel:
+
+> 🔗 **Live Frontend Demo:**
+> https://spendly-fawn.vercel.app
+
+## Deployment Architecture
+
+```txt
+User
+↓
+Vercel Frontend
+↓
+Vercel /api Proxy
+↓
+Spring Boot Backend on OCI VM
+↓
+Neon PostgreSQL Database
+```
+
+## Backend Deployment Notes
+
+* Backend deployed on Oracle Cloud Infrastructure
+* Application packaged as a Spring Boot `.jar`
+* Backend managed as a `systemd` service
+* PostgreSQL database hosted on Neon
+* Environment variables managed on the VM
+* CORS configured for the deployed Vercel frontend
+* Frontend communicates with the backend through Vercel `/api` rewrites
+* Public API tested through the deployed frontend demo
+
+This setup allows the project to demonstrate a real full-stack deployment flow while keeping the backend and frontend in separate repositories.
 
 ---
 
@@ -22,8 +60,11 @@ Spendly aims to model the backend architecture of a real financial platform, emp
 * Scalable and maintainable backend structure
 * Real-world API design practices
 * Authenticated financial summary data for dashboard usage
+* Cloud-based backend deployment
+* Real frontend-to-backend integration
 
 This repository contains the **backend API** of Spendly.
+
 The frontend is maintained in a separate repository:
 
 > 🌐 **Frontend Repository:**
@@ -51,10 +92,14 @@ The frontend is maintained in a separate repository:
 * Stateless Authentication
 * Protected routes with Spring Security
 * Custom unauthorized and forbidden responses
+* CORS configuration for deployed frontend origins
 
 ## Database & Infrastructure
 
 * PostgreSQL
+* Neon PostgreSQL
+* Oracle Cloud Infrastructure VM
+* systemd service
 * Docker
 * Docker Compose
 
@@ -89,6 +134,10 @@ The backend currently includes:
 * Global exception handling
 * PostgreSQL database
 * Dockerized local environment
+* Cloud database integration with Neon
+* Backend deployment on Oracle Cloud Infrastructure
+* Runtime management with `systemd`
+* CORS configuration for Vercel frontend integration
 
 The project continues evolving toward a more complete financial management platform with richer dashboards, transaction correction flows, tests, documentation, observability and production-readiness improvements planned for future iterations.
 
@@ -312,6 +361,50 @@ GET /dashboard/summary
 
 ---
 
+# Phase 6 — Cloud Deployment and Frontend Integration (Completed)
+
+The backend was deployed to an Oracle Cloud Infrastructure VM and connected to a Neon PostgreSQL database.
+
+## Deployment features
+
+* Spring Boot `.jar` generated with Maven
+* Backend uploaded to OCI VM
+* Java runtime configured on the VM
+* Environment variables configured outside the source code
+* Neon PostgreSQL connection validated
+* Public port access configured
+* Backend managed by `systemd`
+* Frontend Vercel origin configured in CORS
+* Integration validated through the deployed frontend
+
+## Production-like flow
+
+```txt
+Frontend request
+↓
+Vercel /api rewrite
+↓
+OCI public backend endpoint
+↓
+Spring Security JWT validation
+↓
+Service layer business rules
+↓
+Neon PostgreSQL
+```
+
+## Deployment concepts applied
+
+* Externalized configuration
+* Cloud-hosted database
+* Public API deployment
+* Service process management with `systemd`
+* CORS configuration for deployed frontend origins
+* Separation between frontend and backend repositories
+* Manual production-style validation through real API requests
+
+---
+
 # 🔐 Security & Authentication
 
 Spendly uses stateless JWT authentication with Spring Security.
@@ -326,6 +419,7 @@ Spendly uses stateless JWT authentication with Spring Security.
 * BCrypt password encryption
 * Authentication through SecurityContext
 * Authenticated resource ownership validation
+* CORS configured for allowed frontend origins
 
 ---
 
@@ -338,6 +432,7 @@ Spendly uses stateless JWT authentication with Spring Security.
 5. Protected requests send token through the Authorization header
 6. JWT filter validates token on every request
 7. Authenticated endpoints resolve the current user from the token
+8. Protected resources are filtered by authenticated user ownership
 
 ---
 
@@ -533,11 +628,11 @@ Authorization: Bearer <JWT_TOKEN>
 
 ---
 
-# 🌐 Infrastructure (Dockerized)
+# 🌐 Infrastructure
 
-The backend environment is containerized for local development.
+The backend supports both local Docker-based development and a deployed cloud environment.
 
-## Infrastructure setup
+## Local infrastructure
 
 * Dockerfile for backend packaging
 * Docker Compose orchestration
@@ -546,13 +641,14 @@ The backend environment is containerized for local development.
 * Externalized environment variables
 * Persistent PostgreSQL volume
 
-## Run with Docker
+## Deployed infrastructure
 
-```bash
-docker compose up -d --build
-```
-
-This helps provide reproducible environments and simplifies local setup.
+* Oracle Cloud Infrastructure VM
+* Spring Boot `.jar` running with `systemd`
+* Neon PostgreSQL database
+* Environment variables stored on the VM
+* Public backend endpoint consumed by the deployed frontend
+* CORS configured for Vercel frontend domains
 
 ---
 
@@ -574,18 +670,15 @@ cd spendly-backend
 
 ## Environment variables
 
-Use [`.env.example`](.env.example) as the deployment reference. Configure
-those variables in the environment settings of Render, Railway, Koyeb, or
-another deployment provider. Do not commit the real `.env` file or production
-credentials.
+Use [`.env.example`](.env.example) as the deployment reference. Configure the required variables locally, in Docker Compose, or in the deployed VM environment.
 
-For a public frontend, replace `APP_CORS_ALLOWED_ORIGINS` with its deployed
-URL. Multiple origins must be separated by commas.
+Do not commit the real `.env` file or production credentials.
+
+For a public frontend, replace `APP_CORS_ALLOWED_ORIGINS` with its deployed URL. Multiple origins must be separated by commas.
 
 ## Create `.env`
 
-For local Docker Compose, `DB_SPENDLY_DATABASE` is also required because the
-JDBC URL is assembled by the Compose configuration.
+For local Docker Compose, `DB_SPENDLY_DATABASE` is also required because the JDBC URL is assembled by the Compose configuration.
 
 ```env
 JWT_SECRET=replace_with_a_strong_secret_at_least_32_bytes
@@ -647,14 +740,80 @@ On Windows:
 
 ---
 
+# ☁️ Deployment Notes
+
+The current deployed backend runs as a Java process managed by `systemd`.
+
+## Build application
+
+```bash
+./mvnw clean package -DskipTests
+```
+
+Generated artifact:
+
+```txt
+target/spendly-0.0.1-SNAPSHOT.jar
+```
+
+## Upload JAR to OCI VM
+
+```bash
+scp -i path/to/private-key.key \
+  target/spendly-0.0.1-SNAPSHOT.jar \
+  ubuntu@<OCI_PUBLIC_IP>:/home/ubuntu/spendly.jar
+```
+
+## Restart service on VM
+
+```bash
+ssh -i path/to/private-key.key ubuntu@<OCI_PUBLIC_IP>
+sudo systemctl restart spendly.service
+sudo systemctl status spendly.service --no-pager
+```
+
+## Check logs
+
+```bash
+sudo journalctl -u spendly.service -f
+```
+
+## Validate API
+
+Protected endpoint without token should return `401 Unauthorized`:
+
+```bash
+curl -i http://<OCI_PUBLIC_IP>:8080/customers/me
+```
+
+Expected behavior:
+
+```txt
+HTTP/1.1 401
+```
+
+---
+
 # 🧪 Testing Status
 
 The project currently compiles successfully, but the automated test suite still needs improvement.
 
+Current validation:
+
+* `./mvnw clean package -DskipTests` passing
+* CORS configuration test passing
+* Authentication manually validated
+* JWT protected endpoint manually validated
+* Dashboard integration manually validated
+* Wallet and transaction flows manually validated
+* Backend deployment on OCI manually validated
+* Frontend-to-backend integration manually validated through Vercel
+* Neon PostgreSQL connection validated in deployed environment
+
 Current testing limitations:
 
-* Tests are not yet fully isolated
 * Some existing tests depend on a local PostgreSQL instance
+* Full isolated test environment is still planned
 * Testcontainers or a dedicated test profile are planned for future iterations
 
 Planned improvements:
@@ -664,6 +823,7 @@ Planned improvements:
 * Authentication flow tests
 * Financial transaction rule tests
 * Dashboard summary tests
+* Testcontainers-based database setup
 
 ---
 
@@ -681,12 +841,14 @@ Planned next steps include:
 * CI pipeline for build and tests
 * Improved observability and structured logs
 * Production-oriented environment configuration
+* Future backend HTTPS setup with domain, Nginx and SSL certificate
 
 ---
 
-# 🔗 Related Repositories
+# 🔗 Related Repositories & Live Demo
 
 * [Spendly Frontend](https://github.com/paulojrtoledo/spendly-frontend)
+* [Live Frontend Demo](https://spendly-fawn.vercel.app)
 
 ---
 
@@ -696,4 +858,5 @@ Planned next steps include:
 Backend / Full-Stack Developer in progress
 
 * GitHub: [paulojrtoledo](https://github.com/paulojrtoledo)
+
 * LinkedIn: [Paulo Emilio](https://www.linkedin.com/)
