@@ -19,7 +19,7 @@ JWT_SECRET=replace_with_a_strong_secret_at_least_32_bytes
 DB_SPENDLY_URL=jdbc:postgresql://host:5432/database
 DB_SPENDLY_USERNAME=replace_with_database_user
 DB_SPENDLY_PASSWORD=replace_with_database_password
-APP_CORS_ALLOWED_ORIGINS=https://your-frontend.example.com
+APP_CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:5174,https://spendly-fawn.vercel.app
 SPRING_JPA_SHOW_SQL=false
 ```
 
