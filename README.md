@@ -2,7 +2,7 @@
 
 Spendly is a backend system for a modern personal finance management platform built with a strong focus on security, financial consistency, scalable architecture and real-world backend engineering practices.
 
-The project simulates the backend foundation of a real financial product, including authentication, wallet management, transaction flows, ownership validation, transactional business rules, authenticated financial dashboard data and integration with a deployed frontend application.
+The project simulates the backend foundation of a real financial product, including authentication, wallet management, income and expense flows, transaction reversal, ownership validation, transactional business rules, authenticated financial dashboard data and integration with a deployed frontend application.
 
 > 🚧 **Project Status:** Active Development / Live Demo Available
 > This project is still evolving, but it already has a functional deployed demo environment connected to a cloud-hosted backend and database.
@@ -122,6 +122,9 @@ The backend currently includes:
 * Wallet soft delete strategy
 * Financial transaction module
 * Income and expense operations
+* Transaction lifecycle with `ACTIVE` and `REVERSED` statuses
+* Secure income and expense reversal flow
+* Protection against duplicate transaction reversals
 * Automatic wallet balance updates
 * Insufficient funds validation
 * Transaction category validation by transaction type
@@ -139,7 +142,7 @@ The backend currently includes:
 * Runtime management with `systemd`
 * CORS configuration for Vercel frontend integration
 
-The project continues evolving toward a more complete financial management platform with richer dashboards, transaction correction flows, tests, documentation, observability and production-readiness improvements planned for future iterations.
+The project continues evolving toward a more complete financial management platform with transaction filters and pagination, database migrations, concurrency protection, API documentation, observability and production-readiness improvements planned for future iterations.
 
 ---
 
@@ -245,6 +248,11 @@ The transaction module is responsible for handling financial operations linked t
 * Create transactions
 * Income operations
 * Expense operations
+* Transaction status management with `ACTIVE` and `REVERSED`
+* Income transaction reversal
+* Expense transaction reversal
+* Duplicate reversal protection
+* Transaction history preservation after reversal
 * Automatic wallet balance updates
 * List authenticated user transactions
 * Retrieve transaction by ID
@@ -275,6 +283,18 @@ The transaction module is responsible for handling financial operations linked t
 * INVESTMENT
 * OTHER_EXPENSE
 
+## Transaction Status
+
+### ACTIVE
+
+The transaction is effective and contributes to the user's current financial totals.
+
+### REVERSED
+
+The transaction remains available in the financial history, but its effect on the wallet balance has been reversed.
+
+A reversed transaction cannot be reversed again.
+
 ## Financial Rules
 
 * Expense operations cannot exceed wallet balance
@@ -284,6 +304,13 @@ The transaction module is responsible for handling financial operations linked t
 * All financial operations are transactional and atomic
 * Financial values use `BigDecimal` precision
 * Transactions are always validated against wallet ownership
+* New transactions are created with `ACTIVE` status
+* Reversing an `INCOME` transaction subtracts its amount from the wallet balance
+* An `INCOME` reversal is rejected when the wallet does not have sufficient balance
+* Reversing an `EXPENSE` transaction restores its amount to the wallet balance
+* A reversed transaction is preserved and marked as `REVERSED`
+* A transaction cannot be reversed more than once
+* Transaction reversal is restricted to the authenticated owner
 
 ## Backend concepts applied
 
@@ -329,13 +356,14 @@ GET /dashboard/summary
   "transactionCount": 3,
   "recentTransactions": [
     {
-      "id": 3,
-      "description": "Market",
-      "amount": 100.00,
-      "type": "EXPENSE",
-      "category": "FOOD",
-      "walletName": "Main Wallet",
-      "createdAt": "2026-05-25T20:29:00.910114"
+  "id": 3,
+  "description": "Market",
+  "amount": 100.00,
+  "type": "EXPENSE",
+  "category": "FOOD",
+  "status": "ACTIVE",
+  "walletName": "Main Wallet",
+  "createdAt": "2026-05-25T20:29:00.910114"
     }
   ]
 }
@@ -344,9 +372,12 @@ GET /dashboard/summary
 ## Dashboard Rules
 
 * The summary only returns data from the authenticated user
-* `totalBalance` considers only ACTIVE wallets
-* `walletCount` considers only ACTIVE wallets
-* Income, expense, transaction count and recent transactions preserve the user's financial history
+* `totalBalance` considers only `ACTIVE` wallets
+* `walletCount` considers only `ACTIVE` wallets
+* `totalIncome` considers only `ACTIVE` income transactions
+* `totalExpense` considers only `ACTIVE` expense transactions
+* `transactionCount` includes both `ACTIVE` and `REVERSED` transactions
+* Recent transactions include both statuses and expose the transaction status
 * Recent transactions are ordered from newest to oldest
 * Empty financial data returns zero values and an empty recent transaction list
 
@@ -589,6 +620,54 @@ GET /transactions/{id}
 
 ---
 
+## Reverse Transaction
+
+```http
+POST /transactions/{id}/reverse
+```
+
+Reverses the financial effect of an existing transaction while preserving its original record.
+
+### Headers
+
+```http
+Authorization: Bearer <JWT_TOKEN>
+```
+
+### Response
+
+```json
+{
+  "id": 1,
+  "walletId": 1,
+  "walletName": "Main Wallet",
+  "type": "EXPENSE",
+  "category": "FOOD",
+  "amount": 100.00,
+  "description": "Market",
+  "status": "REVERSED",
+  "createdAt": "2026-08-04T10:30:00"
+}
+```
+
+### Reversal rules
+
+* Reversing an `INCOME` transaction subtracts the transaction amount from the wallet balance
+* The reversal is rejected if the current balance is insufficient
+* Reversing an `EXPENSE` transaction restores the amount to the wallet balance
+* A transaction can only be reversed once
+* Transactions from another customer cannot be accessed or reversed
+
+### Possible responses
+
+* `200 OK` — transaction reversed successfully
+* `400 Bad Request` — insufficient balance to reverse an income transaction
+* `401 Unauthorized` — authentication is missing or invalid
+* `404 Not Found` — transaction does not exist or belongs to another customer
+* `409 Conflict` — transaction has already been reversed
+
+---
+
 # 📊 Dashboard Endpoints
 
 ## Get Authenticated Financial Summary
@@ -796,48 +875,80 @@ HTTP/1.1 401
 
 # 🧪 Testing Status
 
-The project currently compiles successfully, but the automated test suite still needs improvement.
+The backend currently has an automated test suite covering domain rules, security configuration, HTTP behavior and repository integration with PostgreSQL.
 
-Current validation:
+## Current result
 
-* `./mvnw clean package -DskipTests` passing
-* CORS configuration test passing
-* Authentication manually validated
-* JWT protected endpoint manually validated
-* Dashboard integration manually validated
-* Wallet and transaction flows manually validated
-* Backend deployment on OCI manually validated
-* Frontend-to-backend integration manually validated through Vercel
-* Neon PostgreSQL connection validated in deployed environment
+```text
+Tests run: 35
+Failures: 0
+Errors: 0
+Skipped: 0
+BUILD SUCCESS
+```
 
-Current testing limitations:
+## Test coverage
 
-* Some existing tests depend on a local PostgreSQL instance
-* Full isolated test environment is still planned
-* Testcontainers or a dedicated test profile are planned for future iterations
+The current suite includes:
 
-Planned improvements:
+* Transaction domain status tests
+* Transaction service tests
+* Wallet service tests
+* Dashboard service tests
+* Security authentication tests
+* CORS configuration tests
+* Transaction reversal controller tests with MockMvc
+* Repository integration tests with PostgreSQL and Testcontainers
+* Main Spring application context test
 
-* Unit tests for services
-* Integration tests for repositories and controllers
-* Authentication flow tests
-* Financial transaction rule tests
-* Dashboard summary tests
-* Testcontainers-based database setup
+## Transaction reversal coverage
 
----
+The suite validates:
+
+* New transactions start with `ACTIVE` status
+* Transactions can transition to `REVERSED`
+* Income reversal decreases wallet balance
+* Income reversal is rejected when the balance is insufficient
+* Expense reversal restores wallet balance
+* Duplicate reversals are rejected
+* Transaction ownership remains isolated between customers
+* HTTP responses for `200`, `400`, `401`, `404` and `409`
+* Reversed transactions are excluded from income and expense totals
+* Reversed transactions remain included in transaction history
+* Recent transactions include both `ACTIVE` and `REVERSED` statuses
+
+## Integration environment
+
+Repository integration tests use:
+
+* Testcontainers
+* PostgreSQL 17
+* An isolated temporary database
+* Automatic container startup and cleanup
+
+Run the complete suite with:
+
+```bash
+./mvnw clean test
+```
+
+On Windows using Git Bash:
+
+```bash
+./mvnw.cmd clean test
+```
 
 # 🗺️ Roadmap
 
 Planned next steps include:
 
-* Transaction cancellation flow
-* Transaction editing with balance recalculation
 * Filters and pagination for transactions
+* Concurrency protection for wallet balance updates and transaction reversals
+* Transaction editing with safe balance recalculation
+* Flyway or Liquibase migrations
 * More complete dashboard analytics
 * OpenAPI / Swagger documentation
-* Flyway or Liquibase migrations
-* Automated tests with isolated database setup
+* Additional controller and end-to-end API tests
 * CI pipeline for build and tests
 * Improved observability and structured logs
 * Production-oriented environment configuration
