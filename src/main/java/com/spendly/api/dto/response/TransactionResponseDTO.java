@@ -1,6 +1,7 @@
 package com.spendly.api.dto.response;
 
 import com.spendly.domain.entity.Transaction;
+import com.spendly.domain.entity.TransactionStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -12,7 +13,8 @@ public record TransactionResponseDTO(
     String category,
         BigDecimal amount,
         String description,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        TransactionStatus status
 ) {
     public static TransactionResponseDTO from(Transaction t) {
         return new TransactionResponseDTO(
@@ -22,7 +24,8 @@ public record TransactionResponseDTO(
         t.getCategory() != null ? t.getCategory().name() : null,
                 t.getAmount(),
                 t.getDescription(),
-                t.getCreatedAt()
+                t.getCreatedAt(),
+                t.getStatus()
         );
     }
 }

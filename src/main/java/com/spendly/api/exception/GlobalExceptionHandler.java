@@ -6,6 +6,7 @@ import com.spendly.domain.exception.InvalidCredentialsException;
 import com.spendly.domain.exception.WalletAccessDeniedException;
 import com.spendly.domain.exception.WalletNotFoundException;
 import com.spendly.domain.exception.TransactionNotFoundException;
+import com.spendly.domain.exception.TransactionAlreadyReversedException;
 import com.spendly.domain.exception.InsufficientFundsException;
 import com.spendly.domain.exception.TransactionCategoryMismatchException;
 import org.springframework.http.HttpStatus;
@@ -81,6 +82,16 @@ public class GlobalExceptionHandler {
         return new ErrorResponse(
                 ex.getMessage(),
                 HttpStatus.NOT_FOUND.value(),
+                LocalDateTime.now()
+        );
+    }
+
+    @ExceptionHandler(TransactionAlreadyReversedException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleTransactionAlreadyReversed(TransactionAlreadyReversedException ex) {
+        return new ErrorResponse(
+                ex.getMessage(),
+                HttpStatus.CONFLICT.value(),
                 LocalDateTime.now()
         );
     }

@@ -3,6 +3,7 @@ package com.spendly.domain.repository;
 import com.spendly.domain.entity.Customer;
 import com.spendly.domain.entity.Transaction;
 import com.spendly.domain.entity.TransactionCategory;
+import com.spendly.domain.entity.TransactionStatus;
 import com.spendly.domain.entity.TransactionType;
 import com.spendly.domain.entity.Wallet;
 import com.spendly.domain.entity.WalletStatus;
@@ -108,8 +109,25 @@ class RepositoryIntegrationTest {
         Wallet wallet = saveWallet("Principal", "0.00", customer);
         Wallet otherWallet = saveWallet("Outra", "0.00", otherCustomer);
         saveTransaction(wallet, TransactionType.INCOME, TransactionCategory.SALARY, "1000.00", "Salário");
-        saveTransaction(wallet, TransactionType.INCOME, TransactionCategory.FREELANCE, "250.50", "Projeto");
+        Transaction reversedIncome = saveTransaction(
+                wallet,
+                TransactionType.INCOME,
+                TransactionCategory.FREELANCE,
+                "250.50",
+                "Projeto estornado"
+        );
+        reversedIncome.reverse();
+        transactionRepository.save(reversedIncome);
         saveTransaction(wallet, TransactionType.EXPENSE, TransactionCategory.FOOD, "80.25", "Mercado");
+        Transaction reversedExpense = saveTransaction(
+                wallet,
+                TransactionType.EXPENSE,
+                TransactionCategory.BILLS,
+                "20.00",
+                "Conta estornada"
+        );
+        reversedExpense.reverse();
+        transactionRepository.save(reversedExpense);
         saveTransaction(otherWallet, TransactionType.INCOME, TransactionCategory.SALARY, "9000.00", "Outro salário");
         saveTransaction(otherWallet, TransactionType.EXPENSE, TransactionCategory.BILLS, "4000.00", "Outra conta");
 
@@ -117,12 +135,27 @@ class RepositoryIntegrationTest {
 
         assertThat(transactions)
                 .extracting(Transaction::getDescription)
-                .containsExactlyInAnyOrder("Salário", "Projeto", "Mercado");
-        assertThat(transactionRepository.sumAmountByCustomerIdAndType(customer.getId(), TransactionType.INCOME))
-                .isEqualByComparingTo("1250.50");
-        assertThat(transactionRepository.sumAmountByCustomerIdAndType(customer.getId(), TransactionType.EXPENSE))
+                .containsExactlyInAnyOrder("Salário", "Projeto estornado", "Mercado", "Conta estornada");
+        assertThat(transactionRepository.sumAmountByCustomerIdAndTypeAndStatus(
+                customer.getId(),
+                TransactionType.INCOME,
+                TransactionStatus.ACTIVE
+        )).isEqualByComparingTo("1000.00");
+        assertThat(transactionRepository.sumAmountByCustomerIdAndTypeAndStatus(
+                customer.getId(),
+                TransactionType.EXPENSE,
+                TransactionStatus.ACTIVE
+        ))
                 .isEqualByComparingTo("80.25");
-        assertThat(transactionRepository.countByWalletCustomerId(customer.getId())).isEqualTo(3L);
+        assertThat(transactionRepository.countByWalletCustomerId(customer.getId())).isEqualTo(4L);
+        assertThat(transactions)
+                .extracting(Transaction::getStatus)
+                .containsExactlyInAnyOrder(
+                        TransactionStatus.ACTIVE,
+                        TransactionStatus.REVERSED,
+                        TransactionStatus.ACTIVE,
+                        TransactionStatus.REVERSED
+                );
     }
 
     @Test
@@ -142,6 +175,10 @@ class RepositoryIntegrationTest {
                     "Transação " + index
             ));
         }
+        transactions.get(3).reverse();
+        transactions.get(6).reverse();
+        transactionRepository.save(transactions.get(3));
+        transactionRepository.save(transactions.get(6));
         Transaction otherTransaction = saveTransaction(
                 otherWallet,
                 TransactionType.INCOME,
@@ -173,6 +210,15 @@ class RepositoryIntegrationTest {
         assertThat(recentTransactions)
                 .extracting(Transaction::getCreatedAt)
                 .isSortedAccordingTo((left, right) -> right.compareTo(left));
+        assertThat(recentTransactions)
+                .extracting(Transaction::getStatus)
+                .containsExactly(
+                        TransactionStatus.REVERSED,
+                        TransactionStatus.ACTIVE,
+                        TransactionStatus.ACTIVE,
+                        TransactionStatus.REVERSED,
+                        TransactionStatus.ACTIVE
+                );
         assertThat(recentTransactions)
                 .extracting(transaction -> transaction.getWallet().getCustomer().getId())
                 .containsOnly(customer.getId());

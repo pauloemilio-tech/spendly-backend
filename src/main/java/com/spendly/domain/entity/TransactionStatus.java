@@ -1,13 +1,12 @@
 package com.spendly.domain.entity;
 
 public enum TransactionStatus {
-    PENDING("Transação pendente"),
-    COMPLETED("Transação efetuada com sucesso"),
-    FAILED("Transação incompleta");
+    ACTIVE("Transação ativa"),
+    REVERSED("Transação estornada");
 
-    private String description;
+    private final String description;
 
-    TransactionStatus(String description){
+    TransactionStatus(String description) {
         this.description = description;
     }
 }
