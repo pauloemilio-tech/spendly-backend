@@ -19,4 +19,9 @@ public class AuthController {
     public LoginResponseDTO login(@Valid @RequestBody LoginRequestDTO data) {
         return authService.login(data);
     }
+
+    @PostMapping("/auth/guest")
+    public LoginResponseDTO createGuestSession() {
+        return authService.createGuestSession();
+    }
 }

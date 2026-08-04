@@ -28,7 +28,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
-    private static final Set<String> PUBLIC_POST_ENDPOINTS = Set.of("/auth/login", "/customers");
+    private static final Set<String> PUBLIC_POST_ENDPOINTS = Set.of("/auth/login", "/auth/guest", "/customers");
 
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
