@@ -6,6 +6,7 @@ import com.spendly.domain.entity.Customer;
 import com.spendly.domain.entity.Transaction;
 import com.spendly.domain.entity.TransactionCategory;
 import com.spendly.domain.entity.TransactionType;
+import com.spendly.domain.entity.TransactionStatus;
 import com.spendly.domain.entity.Wallet;
 import com.spendly.domain.entity.WalletStatus;
 import com.spendly.domain.entity.WalletType;
@@ -50,9 +51,17 @@ class DashboardServiceTest {
         stubCustomer();
         when(walletRepository.sumBalanceByCustomerIdAndStatus(CUSTOMER_ID, WalletStatus.ACTIVE))
                 .thenReturn(new BigDecimal("1250.75"));
-        when(transactionRepository.sumAmountByCustomerIdAndType(CUSTOMER_ID, TransactionType.INCOME))
+        when(transactionRepository.sumAmountByCustomerIdAndTypeAndStatus(
+                CUSTOMER_ID,
+                TransactionType.INCOME,
+                TransactionStatus.ACTIVE
+        ))
                 .thenReturn(new BigDecimal("3000.00"));
-        when(transactionRepository.sumAmountByCustomerIdAndType(CUSTOMER_ID, TransactionType.EXPENSE))
+        when(transactionRepository.sumAmountByCustomerIdAndTypeAndStatus(
+                CUSTOMER_ID,
+                TransactionType.EXPENSE,
+                TransactionStatus.ACTIVE
+        ))
                 .thenReturn(new BigDecimal("1749.25"));
         when(walletRepository.countByCustomerIdAndStatus(CUSTOMER_ID, WalletStatus.ACTIVE)).thenReturn(2L);
         when(transactionRepository.countByWalletCustomerId(CUSTOMER_ID)).thenReturn(8L);
@@ -68,8 +77,16 @@ class DashboardServiceTest {
         assertThat(response.transactionCount()).isEqualTo(8L);
         assertThat(response.recentTransactions()).isEmpty();
         verify(walletRepository).sumBalanceByCustomerIdAndStatus(CUSTOMER_ID, WalletStatus.ACTIVE);
-        verify(transactionRepository).sumAmountByCustomerIdAndType(CUSTOMER_ID, TransactionType.INCOME);
-        verify(transactionRepository).sumAmountByCustomerIdAndType(CUSTOMER_ID, TransactionType.EXPENSE);
+        verify(transactionRepository).sumAmountByCustomerIdAndTypeAndStatus(
+                CUSTOMER_ID,
+                TransactionType.INCOME,
+                TransactionStatus.ACTIVE
+        );
+        verify(transactionRepository).sumAmountByCustomerIdAndTypeAndStatus(
+                CUSTOMER_ID,
+                TransactionType.EXPENSE,
+                TransactionStatus.ACTIVE
+        );
         verify(walletRepository).countByCustomerIdAndStatus(CUSTOMER_ID, WalletStatus.ACTIVE);
         verify(transactionRepository).countByWalletCustomerId(CUSTOMER_ID);
     }
@@ -93,6 +110,7 @@ class DashboardServiceTest {
                 new BigDecimal("500.00"),
                 "Projeto"
         );
+        older.reverse();
         when(transactionRepository.findTop5ByWalletCustomerIdOrderByCreatedAtDesc(CUSTOMER_ID))
                 .thenReturn(List.of(newest, older));
 
@@ -105,6 +123,8 @@ class DashboardServiceTest {
         assertThat(response.recentTransactions().get(0).type()).isEqualTo(TransactionType.EXPENSE.name());
         assertThat(response.recentTransactions().get(0).category()).isEqualTo(TransactionCategory.FOOD.name());
         assertThat(response.recentTransactions().get(0).walletName()).isEqualTo("Principal");
+        assertThat(response.recentTransactions().get(0).status()).isEqualTo(TransactionStatus.ACTIVE);
+        assertThat(response.recentTransactions().get(1).status()).isEqualTo(TransactionStatus.REVERSED);
         verify(transactionRepository).findTop5ByWalletCustomerIdOrderByCreatedAtDesc(CUSTOMER_ID);
     }
 
@@ -113,9 +133,17 @@ class DashboardServiceTest {
         stubCustomer();
         when(walletRepository.sumBalanceByCustomerIdAndStatus(CUSTOMER_ID, WalletStatus.ACTIVE))
                 .thenReturn(null);
-        when(transactionRepository.sumAmountByCustomerIdAndType(CUSTOMER_ID, TransactionType.INCOME))
+        when(transactionRepository.sumAmountByCustomerIdAndTypeAndStatus(
+                CUSTOMER_ID,
+                TransactionType.INCOME,
+                TransactionStatus.ACTIVE
+        ))
                 .thenReturn(null);
-        when(transactionRepository.sumAmountByCustomerIdAndType(CUSTOMER_ID, TransactionType.EXPENSE))
+        when(transactionRepository.sumAmountByCustomerIdAndTypeAndStatus(
+                CUSTOMER_ID,
+                TransactionType.EXPENSE,
+                TransactionStatus.ACTIVE
+        ))
                 .thenReturn(null);
         when(walletRepository.countByCustomerIdAndStatus(CUSTOMER_ID, WalletStatus.ACTIVE)).thenReturn(0L);
         when(transactionRepository.countByWalletCustomerId(CUSTOMER_ID)).thenReturn(0L);

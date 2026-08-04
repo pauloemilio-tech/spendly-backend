@@ -1,6 +1,7 @@
 package com.spendly.domain.repository;
 
 import com.spendly.domain.entity.Transaction;
+import com.spendly.domain.entity.TransactionStatus;
 import com.spendly.domain.entity.TransactionType;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,10 +23,12 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             from Transaction t
             where t.wallet.customer.id = :customerId
               and t.type = :type
+              and t.status = :status
             """)
-    BigDecimal sumAmountByCustomerIdAndType(
+    BigDecimal sumAmountByCustomerIdAndTypeAndStatus(
             @Param("customerId") Long customerId,
-            @Param("type") TransactionType type
+            @Param("type") TransactionType type,
+            @Param("status") TransactionStatus status
     );
 
     @EntityGraph(attributePaths = "wallet")

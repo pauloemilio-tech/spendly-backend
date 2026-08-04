@@ -4,12 +4,14 @@ import com.spendly.api.dto.request.TransactionRequestDTO;
 import com.spendly.api.dto.response.TransactionResponseDTO;
 import com.spendly.domain.entity.Customer;
 import com.spendly.domain.entity.Transaction;
+import com.spendly.domain.entity.TransactionStatus;
 import com.spendly.domain.entity.TransactionType;
 import com.spendly.domain.entity.TransactionCategory;
 import com.spendly.domain.entity.Wallet;
 import com.spendly.domain.entity.WalletStatus;
 import com.spendly.domain.exception.InsufficientFundsException;
 import com.spendly.domain.exception.TransactionCategoryMismatchException;
+import com.spendly.domain.exception.TransactionAlreadyReversedException;
 import com.spendly.domain.exception.TransactionNotFoundException;
 import com.spendly.domain.exception.WalletNotFoundException;
 import com.spendly.domain.repository.CustomerRepository;
@@ -82,6 +84,36 @@ public class TransactionService {
         Transaction tx = transactionRepository.findByIdAndWalletCustomerId(id, customer.getId())
                 .orElseThrow(() -> new TransactionNotFoundException(id));
         return TransactionResponseDTO.from(tx);
+    }
+
+    @Transactional
+    public TransactionResponseDTO reverseTransaction(String cpf, Long transactionId) {
+        Customer customer = resolveCustomer(cpf);
+        Transaction transaction = transactionRepository
+                .findByIdAndWalletCustomerId(transactionId, customer.getId())
+                .orElseThrow(() -> new TransactionNotFoundException(transactionId));
+
+        if (transaction.getStatus() == TransactionStatus.REVERSED) {
+            throw new TransactionAlreadyReversedException(transactionId);
+        }
+
+        Wallet wallet = transaction.getWallet();
+        if (transaction.getType() == TransactionType.INCOME) {
+            if (wallet.getBalance().compareTo(transaction.getAmount()) < 0) {
+                throw new InsufficientFundsException(
+                        "Insufficient wallet balance to reverse income transaction"
+                );
+            }
+            wallet.decreaseBalance(transaction.getAmount());
+        } else if (transaction.getType() == TransactionType.EXPENSE) {
+            wallet.increaseBalance(transaction.getAmount());
+        }
+
+        transaction.reverse();
+        walletRepository.save(wallet);
+        Transaction saved = transactionRepository.save(transaction);
+
+        return TransactionResponseDTO.from(saved);
     }
 
     // --- helpers ---

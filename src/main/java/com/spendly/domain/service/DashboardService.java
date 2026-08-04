@@ -3,6 +3,7 @@ package com.spendly.domain.service;
 import com.spendly.api.dto.response.DashboardSummaryResponse;
 import com.spendly.api.dto.response.RecentTransactionResponse;
 import com.spendly.domain.entity.Customer;
+import com.spendly.domain.entity.TransactionStatus;
 import com.spendly.domain.entity.TransactionType;
 import com.spendly.domain.entity.WalletStatus;
 import com.spendly.domain.repository.CustomerRepository;
@@ -41,10 +42,18 @@ public class DashboardService {
                 walletRepository.sumBalanceByCustomerIdAndStatus(customerId, WalletStatus.ACTIVE)
         );
         BigDecimal totalIncome = zeroIfNull(
-                transactionRepository.sumAmountByCustomerIdAndType(customerId, TransactionType.INCOME)
+                transactionRepository.sumAmountByCustomerIdAndTypeAndStatus(
+                        customerId,
+                        TransactionType.INCOME,
+                        TransactionStatus.ACTIVE
+                )
         );
         BigDecimal totalExpense = zeroIfNull(
-                transactionRepository.sumAmountByCustomerIdAndType(customerId, TransactionType.EXPENSE)
+                transactionRepository.sumAmountByCustomerIdAndTypeAndStatus(
+                        customerId,
+                        TransactionType.EXPENSE,
+                        TransactionStatus.ACTIVE
+                )
         );
         long walletCount = walletRepository.countByCustomerIdAndStatus(customerId, WalletStatus.ACTIVE);
         long transactionCount = transactionRepository.countByWalletCustomerId(customerId);

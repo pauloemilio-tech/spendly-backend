@@ -40,4 +40,14 @@ public class TransactionController {
             Authentication authentication) {
         return transactionService.getTransaction(authentication.getName(), id);
     }
+
+    @PostMapping("/{id}/reverse")
+    public ResponseEntity<TransactionResponseDTO> reverseTransaction(
+            @PathVariable Long id,
+            Authentication authentication) {
+        TransactionResponseDTO response =
+                transactionService.reverseTransaction(authentication.getName(), id);
+
+        return ResponseEntity.ok(response);
+    }
 }

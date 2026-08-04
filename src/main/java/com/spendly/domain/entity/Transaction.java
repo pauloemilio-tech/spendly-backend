@@ -42,6 +42,11 @@ public class Transaction {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TransactionStatus status;
+
     public Transaction(Wallet wallet, TransactionType type, TransactionCategory category, BigDecimal amount, String description) {
         this.wallet = wallet;
         this.type = type;
@@ -49,5 +54,10 @@ public class Transaction {
         this.amount = amount;
         this.description = description;
         this.createdAt = LocalDateTime.now();
+        this.status = TransactionStatus.ACTIVE;
+    }
+
+    public void reverse() {
+        this.status = TransactionStatus.REVERSED;
     }
 }
