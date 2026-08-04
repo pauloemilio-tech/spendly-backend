@@ -31,6 +31,17 @@ public class CustomerService {
         return new CustomerResponseDTO(savedCustomer.getId(), savedCustomer.getName(), savedCustomer.getEmail());
     }
 
+    public Customer createGuestCustomer(GuestCredentials credentials) {
+        String passwordHash = passwordEncoder.encode(credentials.password());
+        Customer guest = new Customer(
+                "Usuário Visitante",
+                credentials.cpf(),
+                passwordHash,
+                credentials.email()
+        );
+        return customerRepository.saveAndFlush(guest);
+    }
+
     public CustomerResponseDTO getCurrentCustomer(String cpf) {
         Customer customer = customerRepository.findByCpf(cpf)
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));

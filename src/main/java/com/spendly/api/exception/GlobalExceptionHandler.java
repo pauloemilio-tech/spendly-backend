@@ -3,6 +3,7 @@ package com.spendly.api.exception;
 import com.spendly.api.exception.response.ErrorResponse;
 import com.spendly.domain.exception.CpfAlreadyExistsException;
 import com.spendly.domain.exception.InvalidCredentialsException;
+import com.spendly.domain.exception.GuestAccountCreationException;
 import com.spendly.domain.exception.WalletAccessDeniedException;
 import com.spendly.domain.exception.WalletNotFoundException;
 import com.spendly.domain.exception.TransactionNotFoundException;
@@ -19,6 +20,12 @@ import java.time.LocalDateTime;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(GuestAccountCreationException.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    public ErrorResponse handleGuestAccountCreation(GuestAccountCreationException ex) {
+        return new ErrorResponse(ex.getMessage(), HttpStatus.SERVICE_UNAVAILABLE.value(), LocalDateTime.now());
+    }
 
     @ExceptionHandler(CpfAlreadyExistsException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
